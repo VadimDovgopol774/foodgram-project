@@ -30,7 +30,7 @@ services:
     depends_on:
       - db
   gateway:
-    image: tatianasharova/foodgram_gateway
+    image: vadim760/foodgram_gateway
     env_file: .env
     volumes:
       - static:/staticfiles/
