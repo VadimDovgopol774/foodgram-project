@@ -1,19 +1,19 @@
-from django.urls import include, path, re_path
-from rest_framework.routers import DefaultRouter
+from django.urls import path
+from rest_framework.routers import SimpleRouter
+from django.urls import include
 
-from .views import (get_recipe_short_link, IngredientViewSet,
-                    RecipeViewSet, TagViewSet, UserViewSet)
+from .views import TagViewSet, RecipeViewSet, IngredientsViewSet
+from users.views import UserViewSet, get_jwt_token, user_logout
 
-v1_router = DefaultRouter()
 
-v1_router.register('users', UserViewSet)
-v1_router.register('recipes', RecipeViewSet)
-v1_router.register('tags', TagViewSet)
-v1_router.register('ingredients', IngredientViewSet)
+router_v1 = SimpleRouter()
+router_v1.register(r'tags', TagViewSet)
+router_v1.register(r'recipes', RecipeViewSet)
+router_v1.register(r'ingredients', IngredientsViewSet)
+router_v1.register(r'users', UserViewSet)
 
 urlpatterns = [
-    path('', include(v1_router.urls)),
-    path('auth/', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
-    re_path(r'^s/(?P<short_link>[а-яёА-ЯЁa-z-]+)/$', get_recipe_short_link),
+    path('auth/token/login/', get_jwt_token),
+    path('auth/token/logout/', user_logout),
+    path('', include(router_v1.urls)),
 ]

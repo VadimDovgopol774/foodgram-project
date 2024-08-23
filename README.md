@@ -1,74 +1,228 @@
-![workflows](https://github.com/durapov/foodgram/actions/workflows/main.yml/badge.svg)
+Находясь в папке infra, выполните команду docker-compose up. При выполнении этой команды контейнер frontend, описанный в docker-compose.yml, подготовит файлы, необходимые для работы фронтенд-приложения, а затем прекратит свою работу.
 
-# Foodgram — социальная сеть для размещения информации о рецептах
+По адресу http://localhost изучите фронтенд веб-приложения, а по адресу http://localhost/api/docs/ — спецификацию API.
 
-проект доступен здесь http://62.84.122.208:8000/
+## Проект Foodgram
 
-### Функции
+Foodgram - продуктовый помощник с базой кулинарных рецептов. Позволяет публиковать рецепты, сохранять избранные, а также формировать список покупок для выбранных рецептов. Можно подписываться на любимых авторов.
 
-* Регистрация пользователей.
-* Добавить/редактировать/удалить информацию о рецепте
+Проект доступен по [адресу](https://foodgram-joy.zapto.org/)
 
-# Использованные технологии.
+### Технологии:
 
-- [![Python](https://img.shields.io/badge/-Python-464646?style=flat&logo=Python&logoColor=56C0C0&color=cd5c5c)](https://www.python.org/)
-- [![Django](https://img.shields.io/badge/-Django-464646?style=flat&logo=Django&logoColor=56C0C0&color=344CC7)](https://www.djangoproject.com/)
-  [![Django REST Framework](https://img.shields.io/badge/-Django%20REST%20Framework-464646?style=flat&logo=Django%20REST%20Framework&logoColor=56C0C0&color=38761D)](https://www.django-rest-framework.org/)
-- [![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat&logo=PostgreSQL&logoColor=56C0C0&color=0095b6)](https://www.postgresql.org/)
-- [![Nginx](https://img.shields.io/badge/-NGINX-464646?style=flat&logo=NGINX&logoColor=56C0C0&color=FF9900)](https://nginx.org/ru/)
-  [![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat&logo=gunicorn&logoColor=56C0C0&color=344CC7)](https://gunicorn.org/)
-- [![Docker](https://img.shields.io/badge/-Docker-464646?style=flat&logo=Docker&logoColor=56C0C0&color=38761D)](https://www.docker.com/)
-  [![Docker-compose](https://img.shields.io/badge/-Docker%20compose-464646?style=flat&logo=Docker&logoColor=56C0C0&color=0095b6)](https://www.docker.com/)
-  [![Docker Hub](https://img.shields.io/badge/-Docker%20Hub-464646?style=flat&logo=Docker&logoColor=56C0C0&color=FF9900)](https://www.docker.com/products/docker-hub)
-- [![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat&logo=GitHub%20actions&logoColor=56C0C0&color=cd5c5c)](https://github.com/features/actions)
+Python, Django, Django Rest Framework, Docker, Gunicorn, NGINX, PostgreSQL, Continuous Integration, Continuous Deployment
 
-## Как развернуть проект на удаленном сервере
+### Развернуть проект на удаленном сервере:
 
-#### 1. Форкнуть репозиторий и настроить в нем переменные окружения в окне Actions secrets and variables:
+- Клонировать репозиторий:
+```
+https://github.com/Andrew-White-cyber/foodgram
+```
 
-- ALLOWED_HOSTS: список хостов/доменов (через запятую без пробелов)
-- DB_HOST: IP базы данных, или имя контейнера, где запущен сервер БД
-- DB_PORT: порт, по которому Django будет обращаться к базе данных
-- DOCKER_PASSWORD: пароль от вашего докер аккаунта
-- DOCKER_USERNAME: username вашего докер аккаунта
-- HOST: IP-адрес вашего сервера
-- POSTGRES_DB: название БД
-- POSTGRES_PASSWORD: пароль от БД
-- POSTGRES_USER: логин БД
-- SSH_KEY: содержимое закрытого ключа SSH для доступа к серверу
-- SSH_PASSPHRASE: passphrase для доступа к серверу
-- TELEGRAM_TO: ID вашего телеграм-аккаунта
-- TELEGRAM_TOKEN: токен вашего телеграм-бота
-- USER: ваше имя пользователя на сервере
+- Установить на сервере Docker, Docker Compose:
 
-#### 2. На удаленном сервере:
+```
+sudo apt install curl                                   # установка утилиты для скачивания файлов
+curl -fsSL https://get.docker.com -o get-docker.sh      # скачать скрипт для установки
+sh get-docker.sh                                        # запуск скрипта
+sudo apt-get install docker-compose-plugin              # последняя версия docker compose
+```
 
-- установить Docker
-- создать директорию проекта /kittygram
-- в директории проекта разместить файл docker-compose.production.yml из папки infra
-- в директории проекта создать файл .env с переменными окружения, которые указаны в файле .env.example (переменные
-  описаны выше в пункте 1)
+- В корневой директории создать файл .env и заполнить своими данными по аналогии:
+```
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+SECRET_KEY='секретный ключ Django'
+```
 
-#### 3. Клонировать форкнутый репозиторий на локальный компьютер.
 
-#### 4. Запуск проекта при пуше в Github (в ветку main).
+- Скопировать на сервер файлы docker-compose.production.yml из корневой директории, .env:
 
-Проект пройдёт встроенные тесты, создадутся необходимые файлы на сервере в директории ~/kittygram, будут запущены
-необходимые контейнеры
+- Для работы с GitHub Actions необходимо в репозитории в разделе Secrets > Actions создать переменные окружения:
+```
+SECRET_KEY              # секретный ключ Django проекта
+DOCKER_PASSWORD         # пароль от Docker Hub
+DOCKER_USERNAME         # логин Docker Hub
+HOST                    # публичный IP сервера
+USER                    # имя пользователя на сервере
+PASSPHRASE              # *если ssh-ключ защищен паролем
+SSH_KEY                 # приватный ssh-ключ
 
-## Автор
+POSTGRES_DB             # postgres
+POSTGRES_USER           # postgres
+POSTGRES_PASSWORD       # postgres
+DB_HOST                 # db
+DB_PORT                 # 5432 (порт по умолчанию)
+```
 
-#### Dmitry Durapov
+- Создать и запустить контейнеры Docker, выполнить команду на сервере
+*(версии команд "docker compose" или "docker-compose" отличаются в зависимости от установленной версии Docker Compose):*
+```
+sudo docker compose -f docker-compose.production.yml up -d
+```
 
-(на основе https://github.com/yandex-praktikum/foodgram)
+- После успешной сборки выполнить миграции:
+```
+sudo docker compose exec backend python manage.py migrate
+```
 
-для разработки
-********
-Находясь в папке infra, выполните команду docker-compose up.
-При выполнении этой команды контейнер frontend,
-описанный в docker-compose.yml, подготовит файлы,
-необходимые для работы фронтенд-приложения, а затем прекратит свою работу.
+- Создать суперпользователя:
+```
+sudo docker compose exec backend python manage.py createsuperuser
+```
 
-По адресу http://localhost изучите фронтенд веб-приложения,
-а по адресу http://localhost/api/docs/ — спецификацию API.
+- Собрать статику:
+```
+sudo docker compose exec backend python manage.py collectstatic --noinput
+```
 
+- Наполнить базу данных содержимым при помощи админ зоны.
+
+
+- Для остановки контейнеров Docker:
+```
+sudo docker compose down -v      # с их удалением
+sudo docker compose stop         # без удаления
+```
+
+### После каждого обновления репозитория (push в ветку master) будет происходить:
+
+1. Проверка кода на соответствие стандарту PEP8 (с помощью пакета flake8)
+2. Сборка и доставка докер-образов frontend и backend на Docker Hub
+3. Разворачивание проекта на удаленном сервере
+
+### Запуск проекта на локальной машине:
+
+- Клонировать репозиторий:
+```
+https://github.com/Andrew-White-cyber/foodgram
+```
+
+- В корневой директории создать файл .env и заполнить своими данными по аналогии:
+```
+POSTGRES_DB=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+SECRET_KEY='секретный ключ Django'
+```
+
+- Создать и запустить контейнеры Docker, последовательно выполнить команды по созданию миграций, сбору статики, 
+созданию суперпользователя, как указано выше.
+```
+docker-compose -f docker-compose.production.yml up -d
+```
+
+
+- После запуска проект будут доступен по адресу: [http://localhost/](http://localhost/)
+
+# Некоторые примеры запросов:
+1. Список рецептов
+
+GET /api/recipes/
+```
+{
+  "count": 123,
+  "next": "http://foodgram.example.org/api/recipes/?page=4",
+  "previous": "http://foodgram.example.org/api/recipes/?page=2",
+  "results": [
+    {
+      "id": 0,
+      "tags": [
+        {
+          "id": 0,
+          "name": "Завтрак",
+          "slug": "breakfast"
+        }
+      ],
+      "author": {
+        "email": "user@example.com",
+        "id": 0,
+        "username": "string",
+        "first_name": "Вася",
+        "last_name": "Иванов",
+        "is_subscribed": false,
+        "avatar": "http://foodgram.example.org/media/users/image.png"
+      },
+      "ingredients": [
+        {
+          "id": 0,
+          "name": "Картофель отварной",
+          "measurement_unit": "г",
+          "amount": 1
+        }
+      ],
+      "is_favorited": true,
+      "is_in_shopping_cart": true,
+      "name": "string",
+      "image": "http://foodgram.example.org/media/recipes/images/image.png",
+      "text": "string",
+      "cooking_time": 1
+    }
+  ]
+}
+```
+2. Создать рецепт
+
+POST /api/recipes/
+```
+{
+  "count": 123,
+  "next": "http://foodgram.example.org/api/recipes/?page=4",
+  "previous": "http://foodgram.example.org/api/recipes/?page=2",
+  "results": [
+    {
+      "id": 0,
+      "tags": [
+        {
+          "id": 0,
+          "name": "Завтрак",
+          "slug": "breakfast"
+        }
+      ],
+      "author": {
+        "email": "user@example.com",
+        "id": 0,
+        "username": "string",
+        "first_name": "Вася",
+        "last_name": "Иванов",
+        "is_subscribed": false,
+        "avatar": "http://foodgram.example.org/media/users/image.png"
+      },
+      "ingredients": [
+        {
+          "id": 0,
+          "name": "Картофель отварной",
+          "measurement_unit": "г",
+          "amount": 1
+        }
+      ],
+      "is_favorited": true,
+      "is_in_shopping_cart": true,
+      "name": "string",
+      "image": "http://foodgram.example.org/media/recipes/images/image.png",
+      "text": "string",
+      "cooking_time": 1
+    }
+  ]
+}
+```
+3. Добавить рецепт в избранное
+
+POST /api/recipes/{id}/favorite/
+```
+{
+  "id": 0,
+  "name": "string",
+  "image": "http://foodgram.example.org/media/recipes/images/image.png",
+  "cooking_time": 1
+}
+```
+
+### Автор backend'а:
+
+[Andrew-White-cyber](https://github.com/Andrew-White-cyber)
