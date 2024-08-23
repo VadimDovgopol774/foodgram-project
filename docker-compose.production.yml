@@ -15,8 +15,8 @@ services:
   backend:
     depends_on:
       - db
-    image: norman2014/foodgram_backend
-    # build: ./backend/
+    image: vadim760/foodgram_backend
+    build: ./backend/
     volumes:
       - static:/backend_static
       - media:/app/media
@@ -26,8 +26,8 @@ services:
     depends_on:
       - backend
     env_file: .env
-    image: norman2014/foodgram_frontend
-    # build: ./frontend/
+    image: vadim760/foodgram_frontend
+    build: ./frontend/
     command: cp -r /app/build/. /static/
     volumes:
       - static:/static
@@ -36,8 +36,8 @@ services:
     depends_on:
       - backend
       - frontend
-    image: norman2014/foodgram_gateway
-    # build: ./nginx/
+    image: vadim760/foodgram_gateway
+    build: ./nginx/
     env_file: .env
     ports:
       - 7000:80
