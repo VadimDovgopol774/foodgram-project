@@ -1,228 +1,156 @@
-Находясь в папке infra, выполните команду docker-compose up. При выполнении этой команды контейнер frontend, описанный в docker-compose.yml, подготовит файлы, необходимые для работы фронтенд-приложения, а затем прекратит свою работу.
+# **_Foodgram_**
+Foodgram, «Продуктовый помощник». Онлайн-сервис и API для него. На этом сервисе пользователи публикуют свои рецепты, подписываются на публикации других пользователей, добавляют понравившиеся рецепты в список «Избранное», могут скачать список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
 
-По адресу http://localhost изучите фронтенд веб-приложения, а по адресу http://localhost/api/docs/ — спецификацию API.
+**_Ссылка на [проект](http://foodgram-study.ddns.net "Гиперссылка к проекту.")_**
 
-## Проект Foodgram
+**_Ссылка на документацию к [API](http://foodgram-study.ddns.net/api/docs/ "Гиперссылка к API.") с актуальными адресами. Здесь описана структура возможных запросов и ожидаемых ответов._**
 
-Foodgram - продуктовый помощник с базой кулинарных рецептов. Позволяет публиковать рецепты, сохранять избранные, а также формировать список покупок для выбранных рецептов. Можно подписываться на любимых авторов.
+### _Развернуть проект на удаленном сервере:_
 
-Проект доступен по [адресу](https://foodgram-joy.zapto.org/)
-
-### Технологии:
-
-Python, Django, Django Rest Framework, Docker, Gunicorn, NGINX, PostgreSQL, Continuous Integration, Continuous Deployment
-
-### Развернуть проект на удаленном сервере:
-
-- Клонировать репозиторий:
+**_Клонировать репозиторий:_**
 ```
-https://github.com/Andrew-White-cyber/foodgram
+git@github.com:TatianaSharova/foodgram-project-react.git
 ```
+**_Установить на сервере Docker, Docker Compose:_**
+```
+sudo apt install curl                                   - установка утилиты для скачивания файлов
+curl -fsSL https://get.docker.com -o get-docker.sh      - скачать скрипт для установки
+sh get-docker.sh                                        - запуск скрипта
+sudo apt-get install docker-compose-plugin              - последняя версия docker compose
+```
+**_Скопировать на сервер в папку foodgram файл docker-compose.production.yml (команду выполнять, находясь в папке проекта):_**
+```
+scp -i path_to_SSH/SSH_name docker-compose.production.yml username@server_ip:/home/username/foodgram/docker-compose.production.yml
 
-- Установить на сервере Docker, Docker Compose:
-
-```
-sudo apt install curl                                   # установка утилиты для скачивания файлов
-curl -fsSL https://get.docker.com -o get-docker.sh      # скачать скрипт для установки
-sh get-docker.sh                                        # запуск скрипта
-sudo apt-get install docker-compose-plugin              # последняя версия docker compose
-```
-
-- В корневой директории создать файл .env и заполнить своими данными по аналогии:
-```
-POSTGRES_DB=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-DB_HOST=db
-DB_PORT=5432
-SECRET_KEY='секретный ключ Django'
+# SSH_name — имя файла с SSH-ключом (без расширения)
+# path_to_SSH — путь к файлу с SSH-ключом
+# username - имя пользователя на сервере
+# server_ip — IP вашего сервера
 ```
 
-
-- Скопировать на сервер файлы docker-compose.production.yml из корневой директории, .env:
-
-- Для работы с GitHub Actions необходимо в репозитории в разделе Secrets > Actions создать переменные окружения:
+**_Для работы с GitHub Actions необходимо в репозитории в разделе Secrets > Actions создать переменные окружения:_**
 ```
-SECRET_KEY              # секретный ключ Django проекта
-DOCKER_PASSWORD         # пароль от Docker Hub
-DOCKER_USERNAME         # логин Docker Hub
-HOST                    # публичный IP сервера
-USER                    # имя пользователя на сервере
-PASSPHRASE              # *если ssh-ключ защищен паролем
-SSH_KEY                 # приватный ssh-ключ
-
-POSTGRES_DB             # postgres
-POSTGRES_USER           # postgres
-POSTGRES_PASSWORD       # postgres
-DB_HOST                 # db
-DB_PORT                 # 5432 (порт по умолчанию)
+DOCKER_PASSWORD         - пароль от Docker Hub
+DOCKER_USERNAME         - логин Docker Hub
+HOST                    - публичный IP сервера
+USER                    - имя пользователя на сервере
+SSH_KEY                 - приватный ssh-ключ
+SSH_PASSPHRASE          - пароль для ssh-ключа
+TELEGRAM_TO             - ID телеграм-аккаунта для посылки сообщения
+TELEGRAM_TOKEN          - токен бота, посылающего сообщение
 ```
+**_На сервере в папке foodgram создать файл .env и внести туда следующие данные:_**
+```
+POSTGRES_DB             - имя бд
+POSTGRES_USER           - имя пользователя бд
+POSTGRES_PASSWORD       - пароль от бд
+DB_HOST                 - db
+DB_PORT                 - 5432
+SECRET_KEY              - ваш секретный ключ
+```
+**_Создание Docker-образов:_**
 
-- Создать и запустить контейнеры Docker, выполнить команду на сервере
-*(версии команд "docker compose" или "docker-compose" отличаются в зависимости от установленной версии Docker Compose):*
+1.  Замените username на ваш логин на DockerHub:
+
+    ```
+    Из папки frontend выполнить команду:
+    docker build -t username/foodgram_frontend .
+
+    Из папки backend выполнить команду:
+    docker build -t username/foodgram_backend .
+
+    Из папки nginx выполнить команду:
+    docker build -t username/foodgram_gateway . 
+    ```
+
+2. Загрузите образы на DockerHub:
+
+    ```
+    docker push username/foodgram_frontend
+    docker push username/foodgram_backend
+    docker push username/foodgram_gateway
+    ```
+
+**_Запустить контейнеры Docker:_**
 ```
 sudo docker compose -f docker-compose.production.yml up -d
 ```
+**_Выполнить миграции:_**
+```
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+```
+**_Собрать статику:_**
+```
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
 
-- После успешной сборки выполнить миграции:
+sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
 ```
-sudo docker compose exec backend python manage.py migrate
+**_Наполнить базу данных содержимым из файла ingredients.json:_**
 ```
-
-- Создать суперпользователя:
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py load_data_ingredients
 ```
-sudo docker compose exec backend python manage.py createsuperuser
+**_Создать суперпользователя:_**
 ```
-
-- Собрать статику:
+sudo docker compose -f docker-compose.production.yml exec backend python manage.py createsuperuser
 ```
-sudo docker compose exec backend python manage.py collectstatic --noinput
+**_Для остановки контейнеров Docker:_**
 ```
-
-- Наполнить базу данных содержимым при помощи админ зоны.
-
-
-- Для остановки контейнеров Docker:
+sudo docker compose -f docker-compose.production.yml down -v      - с удалением контейнеров и томов
+sudo docker compose -f docker-compose.production.yml stop         - без удаления
 ```
-sudo docker compose down -v      # с их удалением
-sudo docker compose stop         # без удаления
-```
-
 ### После каждого обновления репозитория (push в ветку master) будет происходить:
 
 1. Проверка кода на соответствие стандарту PEP8 (с помощью пакета flake8)
-2. Сборка и доставка докер-образов frontend и backend на Docker Hub
+2. Сборка и доставка докер-образов frontend, backend, gateway на Docker Hub
 3. Разворачивание проекта на удаленном сервере
+4. Отправка сообщения в Telegram в случае успеха
 
-### Запуск проекта на локальной машине:
+### Локальный запуск проекта:
 
-- Клонировать репозиторий:
+**_Склонировать репозиторий к себе_**
 ```
-https://github.com/Andrew-White-cyber/foodgram
-```
-
-- В корневой директории создать файл .env и заполнить своими данными по аналогии:
-```
-POSTGRES_DB=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-DB_HOST=db
-DB_PORT=5432
-SECRET_KEY='секретный ключ Django'
+git@github.com:TatianaSharova/foodgram-project-react.git
 ```
 
-- Создать и запустить контейнеры Docker, последовательно выполнить команды по созданию миграций, сбору статики, 
-созданию суперпользователя, как указано выше.
+**_В директории проекта создать файл .env и заполнить своими данными:_**
 ```
-docker-compose -f docker-compose.production.yml up -d
-```
+SECRET_KEY='ваш секретный ключ'
+ALLOWED_HOSTS='localhost'
+DEBUG_STATUS=True
 
-
-- После запуска проект будут доступен по адресу: [http://localhost/](http://localhost/)
-
-# Некоторые примеры запросов:
-1. Список рецептов
-
-GET /api/recipes/
-```
-{
-  "count": 123,
-  "next": "http://foodgram.example.org/api/recipes/?page=4",
-  "previous": "http://foodgram.example.org/api/recipes/?page=2",
-  "results": [
-    {
-      "id": 0,
-      "tags": [
-        {
-          "id": 0,
-          "name": "Завтрак",
-          "slug": "breakfast"
-        }
-      ],
-      "author": {
-        "email": "user@example.com",
-        "id": 0,
-        "username": "string",
-        "first_name": "Вася",
-        "last_name": "Иванов",
-        "is_subscribed": false,
-        "avatar": "http://foodgram.example.org/media/users/image.png"
-      },
-      "ingredients": [
-        {
-          "id": 0,
-          "name": "Картофель отварной",
-          "measurement_unit": "г",
-          "amount": 1
-        }
-      ],
-      "is_favorited": true,
-      "is_in_shopping_cart": true,
-      "name": "string",
-      "image": "http://foodgram.example.org/media/recipes/images/image.png",
-      "text": "string",
-      "cooking_time": 1
-    }
-  ]
-}
-```
-2. Создать рецепт
-
-POST /api/recipes/
-```
-{
-  "count": 123,
-  "next": "http://foodgram.example.org/api/recipes/?page=4",
-  "previous": "http://foodgram.example.org/api/recipes/?page=2",
-  "results": [
-    {
-      "id": 0,
-      "tags": [
-        {
-          "id": 0,
-          "name": "Завтрак",
-          "slug": "breakfast"
-        }
-      ],
-      "author": {
-        "email": "user@example.com",
-        "id": 0,
-        "username": "string",
-        "first_name": "Вася",
-        "last_name": "Иванов",
-        "is_subscribed": false,
-        "avatar": "http://foodgram.example.org/media/users/image.png"
-      },
-      "ingredients": [
-        {
-          "id": 0,
-          "name": "Картофель отварной",
-          "measurement_unit": "г",
-          "amount": 1
-        }
-      ],
-      "is_favorited": true,
-      "is_in_shopping_cart": true,
-      "name": "string",
-      "image": "http://foodgram.example.org/media/recipes/images/image.png",
-      "text": "string",
-      "cooking_time": 1
-    }
-  ]
-}
-```
-3. Добавить рецепт в избранное
-
-POST /api/recipes/{id}/favorite/
-```
-{
-  "id": 0,
-  "name": "string",
-  "image": "http://foodgram.example.org/media/recipes/images/image.png",
-  "cooking_time": 1
-}
 ```
 
-### Автор backend'а:
+**_В файле settings.py подключить default local database:_**
+```
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'db.sqlite3', }}
 
-[Andrew-White-cyber](https://github.com/Andrew-White-cyber)
+```
+
+**_Запустить контейнеры Docker из папки с docker-compose.yml:._**
+
+```
+docker compose up
+```
+```
+docker compose exec backend python manage.py migrate
+```
+```
+docker compose exec backend python manage.py createsuperuser
+```
+```
+docker compose exec backend python manage.py load_data_ingredients
+```
+
+
+**_После запуска проект будут доступен по адресу: http://localhost:8888/_**
+
+**_Админка проекта будет доступна по адресу: http://localhost:8888/admin/_**
+
+**_Документация будет доступна по адресу: http://localhost:8888/api/docs/_**
+
+
+### Автор
+Татьяна Шарова

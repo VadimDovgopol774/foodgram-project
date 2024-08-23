@@ -1,42 +1,13 @@
 from django.contrib import admin
 
-from .models import MyUser
-from recipes.models import (
-    Ingredients, Tag, Recipe, ShoppingCart,
-    FavoriteRecipe, RecipeIngredients, RecipeTags
-)
+from .models import User
+from recipes.constans import EMPTY_VALUE
 
 
-class MyUserAdmin(admin.ModelAdmin):
-    """Кастомный класс админ модели Myuser."""
-
-    search_fields = ('email', 'username',)
-
-
-class IngredientsAdmin(admin.ModelAdmin):
-    """Кастомный класс админ модели Ingredients."""
-
-    list_display = ('name', 'measurement_unit',)
-    search_fields = ('name',)
-
-
-class RecipeAdmin(admin.ModelAdmin):
-    """Кастомный класс админ модели Recipe."""
-
-    list_display = ('name', 'author', 'added_in_favorites')
-    search_fields = ('name', 'author',)
-    list_filter = ('tags',)
-
-    @admin.display(description='Количество в избранных')
-    def added_in_favorites(self, obj):
-        return obj.users_recipes.count()
-
-
-admin.site.register(MyUser, MyUserAdmin)
-admin.site.register(Ingredients, IngredientsAdmin)
-admin.site.register(Tag)
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(ShoppingCart)
-admin.site.register(FavoriteRecipe)
-admin.site.register(RecipeIngredients)
-admin.site.register(RecipeTags)
+@admin.register(User)
+class FollowAdmin(admin.ModelAdmin):
+    list_display = ('id', 'username', 'first_name',
+                    'last_name', 'email', 'date_joined')
+    list_filter = ('username', 'email',)
+    search_fields = ('email', 'username')
+    empty_value_display = EMPTY_VALUE

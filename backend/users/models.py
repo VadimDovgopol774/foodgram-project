@@ -1,49 +1,22 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+from recipes.constans import EMAIL_LENGTH, USER_MAX_LENGTH
 
 
-class MyUser(AbstractUser):
-    """Кастомная модель пользователя."""
+class User(AbstractUser):
+    '''Класс переопределения базового user.'''
 
-    avatar = models.ImageField(
-        'Аватар',
-        upload_to='avatars/',
-        blank=True,
-        null=True,
-        default=None
-    )
-    email = models.EmailField(
-        'Почта', blank=False, unique=True, max_length=250
-    )
-    username = models.CharField(
-        'Имя пользователя', blank=False, unique=True, max_length=150
-    )
-    password = models.CharField('Пароль', blank=False, max_length=250)
-
-
-class Follow(models.Model):
-    """Модель подписок."""
-
-    user = models.ForeignKey(
-        MyUser, on_delete=models.CASCADE,
-        related_name='followers',
-        blank=True, null=True
-    )
-    following = models.ForeignKey(
-        MyUser,
-        on_delete=models.CASCADE,
-        related_name='following',
-        blank=True,
-        null=True
-    )
+    password = models.CharField('Пароль', default=None,
+                                max_length=USER_MAX_LENGTH)
+    first_name = models.CharField('Имя', max_length=USER_MAX_LENGTH)
+    last_name = models.CharField('Фамилия', max_length=USER_MAX_LENGTH)
+    email = models.EmailField('E-mail', max_length=EMAIL_LENGTH, unique=True)
 
     class Meta:
-        constraints = (
-            models.UniqueConstraint(
-                fields=('following',),
-                name='following_unique'
-            ),
-        )
+        ordering = ('-date_joined',)
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
-    def __str__(self) -> str:
-        return self.user.username
+    def __str__(self):
+        return self.username
