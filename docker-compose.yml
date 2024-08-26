@@ -21,6 +21,7 @@ services:
       - redoc:/app/docs/
     depends_on:
       - db
+    env_file: .env
   
   frontend:
     build: ./frontend/
