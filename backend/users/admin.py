@@ -1,13 +1,14 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 
-from .models import User
-from recipes.constans import EMPTY_VALUE
+User = get_user_model()
 
 
 @admin.register(User)
-class FollowAdmin(admin.ModelAdmin):
-    list_display = ('id', 'username', 'first_name',
-                    'last_name', 'email', 'date_joined')
-    list_filter = ('username', 'email',)
-    search_fields = ('email', 'username')
-    empty_value_display = EMPTY_VALUE
+class UserAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'username', 'email',
+        'first_name', 'last_name', 'date_joined',)
+    search_fields = ('email', 'username', 'first_name', 'last_name')
+    list_filter = ('date_joined', 'email', 'first_name')
+    empty_value_display = '-пусто-'
