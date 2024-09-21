@@ -1,257 +1,191 @@
-![foodgram-project-react Workflow Status](https://github.com/themasterid/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg?branch=master&event=push)
-# Продуктовый помощник Foodgram - дипломный проект студента 21 когорты Яндекс.Практикум 2021-2022 гг. Клепикова Д.
 
-После запуска проекта, он будет доступен по адресу http://127.0.0.1 (если развернут на локальной машине в докере)
-Как запустить и посмотреть в действии описано ниже.
+# "Продуктовый помощник" (Foodgram)
 
-## Описание проекта Foodgram
+## 1. [Описание](#1)
+## 2. [Установка Docker (на платформе Ubuntu)](#2)
+## 3. [База данных и переменные окружения](#3)
+## 4. [Команды для запуска](#4)
+## 5. [Заполнение базы данных](#5)
+## 6. [Техническая информация](#6)
+## 7. [Об авторе](#7)
 
-«Продуктовый помощник»: приложение, на котором пользователи публикуют рецепты кулинарных изделий, подписываться на публикации других авторов и добавлять рецепты в свое избранное.
-Сервис «Список покупок» позволит пользователю создавать список продуктов, которые нужно купить для приготовления выбранных блюд согласно рецепта/ов.
+---
+## 1. Описание <a id=1></a>
 
-## Запуск с использованием CI/CD и Docker
+Проект "Продуктовый помошник" (Foodgram) предоставляет пользователям следующие возможности:
+  - регистрироваться
+  - создавать свои рецепты и управлять ими (корректировать\удалять)
+  - просматривать рецепты других пользователей
+  - добавлять рецепты других пользователей в "Избранное" и в "Корзину"
+  - подписываться на других пользователей
+  - скачать список ингредиентов для рецептов, добавленных в "Корзину"
+  Доступен по ip 158.160.81.21
+  
+## Данные админки:
+  Почта: vad.dovgopol2018@gmail.com
+  Пароль: 070704
 
+---
+## 2. Установка Docker (на платформе Ubuntu) <a id=2></a>
+
+Проект поставляется в четырех контейнерах Docker (db, frontend, backend, nginx).  
+Для запуска необходимо установить Docker и Docker Compose.  
+Подробнее об установке на других платформах можно узнать на [официальном сайте](https://docs.docker.com/engine/install/).
+
+Для начала необходимо скачать и выполнить официальный скрипт:
 ```bash
-# В Settings - Secrets and variables создаем переменный с вашими данными
-# Это необходимо для работы с CI/CD, DockerHub, GitHub
-ALLOWED_HOSTS
-DB_ENGINE
-DB_HOST
-DB_PORT
-HOST
-MY_LOGIN
-MY_PASS
-PASSPHRASE
-POSTGRES_DB
-POSTGRES_PASSWORD
-POSTGRES_USER
-SECRET_KEY
-SSH_KEY
-USER
+apt install curl
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
 ```
 
-Все действия мы будем выполнять в Docker, docker-compose как на локальной машине так и на сервере ВМ Yandex.Cloud.
-Предварительно установим на ВМ в облаке необходимые компоненты для работы:
-
+При необходимости удалить старые версии Docker:
 ```bash
-# username - ваш логин, ip - ip ВМ под управлением Linux Дистрибутива с пакетной базой deb.
-ssh username@ip
+apt remove docker docker-engine docker.io containerd runc 
 ```
 
+Установить пакеты для работы через протокол https:
 ```bash
-sudo apt update && sudo apt upgrade -y && sudo apt install curl -y
+apt update
+```
+```bash
+apt install \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  gnupg-agent \
+  software-properties-common -y 
 ```
 
+Добавить ключ GPG для подтверждения подлинности в процессе установки:
 ```bash
-sudo curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh && sudo rm get-docker.sh
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 ```
 
+Добавить репозиторий Docker в пакеты apt и обновить индекс пакетов:
 ```bash
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" 
+```
+```bash
+apt update
 ```
 
+Установить Docker(CE) и Docker Compose:
 ```bash
-sudo chmod +x /usr/local/bin/docker-compose
+apt install docker-ce docker-compose -y
 ```
 
+Проверить что  Docker работает можно командой:
 ```bash
-sudo systemctl start docker.service && sudo systemctl enable docker.service
+systemctl status docker
 ```
 
-Всё, что нам нужно, установлено, далее, создаем папку /infra в домашней директории /home/username/:
+Подробнее об установке можно узнать по [ссылке](https://docs.docker.com/engine/install/ubuntu/).
 
-```bash
-cd ~
-```
+---
+## 3. База данных и переменные окружения <a id=3></a>
 
-```bash
-mkdir infra
-```
+Проект использует базу данных PostgreSQL.  
+Для подключения и выполненя запросов к базе данных необходимо создать и заполнить файл ".env" с переменными окружения в папке "./infra/".
 
-Предварительно из папки /backend и /frontend загрузим актуальные данные на DockerHub (на вашем ПК) (themasterid - ваш логин на DH):
-
-```bash
-docker login -u themasterid
-```
-
-```bash
-cd backend
-```
-
-```bash
-docker build -t themasterid/foodgram_backend:latest .
-```
-
-```bash
-docker push themasterid/foodgram_backend:latest
-```
-
-```bash
-cd ..
-```
-
-```bash
-cd frontend
-```
-
-Готовим фронт для приложения, это заготовка для отправки на DH (где themasterid ваш логин на DH):
-```bash
-docker build -t themasterid/foodgram_frontend:latest .
-```
-
-Отправляем на DG:
-```bash
-docker push themasterid/foodgram_frontend:latest
-```
-
-Перенести файлы docker-compose.yml и default.conf на сервер, из папки infra в текущем репозитории (на вашем ПК).
-
-```bash
-cd infra
-```
-
-```bash
-scp docker-compose.yml username@server_ip:/home/username/
-```
-
-```bash
-scp default.conf username@server_ip:/home/username/
-```
-
-Так же, создаем файл .env в директории infra на ВМ:
-
-```bash
-touch .env
-```
-
-Заполнить в настройках репозитория секреты .env, необходимы для работы postgres в docker
-
+Шаблон для заполнения файла ".env":
 ```python
-DB_ENGINE='django.db.backends.postgresql'
-POSTGRES_DB='foodgram' # Задаем имя для БД.
-POSTGRES_USER='foodgram_u' # Задаем пользователя для БД.
-POSTGRES_PASSWORD='foodgram_u_pass' # Задаем пароль для БД.
-DB_HOST='db'
-DB_PORT='5432'
-SECRET_KEY='secret'  # Задаем секрет.
-ALLOWED_HOSTS='127.0.0.1, backend' # Вставляем свой IP сервера.
-DEBUG = False
+DB_ENGINE=django.db.backends.postgresql
+DB_NAME=postgres
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+DB_HOST=db
+DB_PORT=5432
+SECRET_KEY='Здесь указать секретный ключ'
+ALLOWED_HOSTS='Здесь указать имя или IP хоста' (Для локального запуска - 127.0.0.1)
 ```
 
-На этом настройка закончена, далее в папке infra выполняем команду:
+---
+## 4. Команды для запуска <a id=4></a>
 
+Перед запуском необходимо склонировать проект:
 ```bash
-docker-compose up -d --build
+HTTPS: git clone https://github.com/DovgopolVadim774/foodgram-project-react.git
+SSH: git clone git@github.com:DovgopolVadim774/foodgram-project-react.git
 ```
 
-Проект запустится на ВМ и будет доступен по указанному вами адресу либо IP. Завершение настройки на ВМ:
-
-В папке infra выполняем команду, что бы собрать контейнеры:
-
-Остановить: 
-
+Cоздать и активировать виртуальное окружение:
 ```bash
-docker-compose stop
+python -m venv venv
+```
+```bash
+Linux: source venv/bin/activate
+Windows: source venv/Scripts/activate
 ```
 
-Удалить вместе с volumes:
-
+И установить зависимости из файла requirements.txt:
 ```bash
-# Все данные удалятся!
-docker-compose down -v
-``` 
-
-Для доступа к контейнеру backend и сборки финальной части выполняем следующие команды:
-
+python3 -m pip install --upgrade pip
+```
 ```bash
-docker-compose exec backend python manage.py makemigrations
+pip install -r requirements.txt
 ```
 
+Далее необходимо собрать образы для фронтенда и бэкенда.  
+Из папки "./backend/foodgram/" выполнить команду:
 ```bash
-docker-compose exec backend python manage.py migrate --noinput
+docker build -t vadim760/foodgram_backend .
 ```
 
+Из папки "./frontend/" выполнить команду:
 ```bash
-docker-compose exec backend python manage.py createsuperuser
+docker build -t vadim760/foodgram_frontend .
 ```
 
+После создания образов можно создавать и запускать контейнеры.  
+Из папки "./infra/" выполнить команду:
 ```bash
-docker-compose exec backend python manage.py collectstatic --no-input
+docker-compose up -d
 ```
 
-Дополнительно можно наполнить DB ингредиентами и тэгами:
-
-```bash
-docker-compose exec backend python manage.py load_tags
-```
-
-```bash
-docker-compose exec backend python manage.py load_ingrs
-```
-
-На этом всё, продуктовый помощник запущен, можно наполнять его рецептами и делится с друзьями!
-
-### Запуск проекта в Docker на локальной машине.
-
-Для Linux ставим Docker как описано выше, для Windows устанавливаем актуальный Docker Desktop.
-
-Перейти в папку infra и выполнить сборку контейнеров:
-
-```bash
-docker-compose up -d --build
-```
-
-Для формирования базы из миграций, финальной настройки и заполнении базы тегами и ингридиентами,
-а так же подтянуть статику, и создаем суперюзера:
-
-```bash
-docker-compose exec backend python manage.py makemigrations
-```
-
+После успешного запуска контейнеров выполнить миграции:
 ```bash
 docker-compose exec backend python manage.py migrate
 ```
 
+Создать суперюзера (Администратора):
 ```bash
 docker-compose exec backend python manage.py createsuperuser
 ```
 
+Собрать статику:
 ```bash
 docker-compose exec backend python manage.py collectstatic --no-input
 ```
 
-Дополнительно можно наполнить DB ингредиентами и тэгами:
+Теперь доступность проекта можно проверить по адресу [http://localhost/](http://localhost/)
 
+---
+## 5. Заполнение базы данных <a id=5></a>
+
+С проектом поставляются данные об ингредиентах.  
+Заполнить базу данных ингредиентами можно выполнив следующую команду из папки "./infra/":
 ```bash
-docker-compose exec backend python manage.py load_tags
+docker-compose exec backend python manage.py fill_ingredients_from_csv --path data/
 ```
 
-```bash
-docker-compose exec backend python manage.py load_ingrs
-```
+Также необходимо заполнить базу данных тегами (или другими данными).  
+Для этого требуется войти в [админ-зону](http://localhost/admin/)
+проекта под логином и паролем администратора (пользователя, созданного командой createsuperuser).
 
-В зависимости от настроек либо используем стандартную базу либо создаем базу и пользователя в Postgres (если будет необходимость запустить без Docker):
+---
+## 6. Техническая информация <a id=6></a>
 
-```bash
-sudo -u postgres psql
-```
+Стек технологий: Python 3, Django, Django Rest, React, Docker, PostgreSQL, nginx, gunicorn, Djoser.
 
-```sql
-CREATE DATABASE basename;
-```
+Веб-сервер: nginx (контейнер nginx)  
+Frontend фреймворк: React (контейнер frontend)  
+Backend фреймворк: Django (контейнер backend)  
+API фреймворк: Django REST (контейнер backend)  
+База данных: PostgreSQL (контейнер db)
 
-```sql
-CREATE USER username WITH ENCRYPTED PASSWORD 'password';
-```
+Веб-сервер nginx перенаправляет запросы клиентов к контейнерам frontend и backend, либо к хранилищам (volume) статики и файлов.  
+Контейнер nginx взаимодействует с контейнером backend через gunicorn.  
+Контейнер frontend взаимодействует с контейнером backend посредством API-запросов.
 
-```sql
-GRANT ALL PRIVILEGES ON DATABASE basename TO username;
-```
-
-### Документация к API доступна после запуска
-
-```url
-http://127.0.0.1/api/docs/
-```
-
-Автор: [Клепиков Дмитрий](https://github.com/themasterid)
+---
