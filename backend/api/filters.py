@@ -5,8 +5,8 @@ from users.models import User
 from recipes.models import Ingredient, Recipe, Tag
 
 
-class TagsMultipleChoiceField(
-        filters.fields.MultipleChoiceField):
+class TagsMultipleChoiceFilter(
+        filters.fields.MultipleChoiceFilter):
     def validate(self, value):
         if self.required and not value:
             raise ValidationError(
@@ -21,7 +21,7 @@ class TagsMultipleChoiceField(
 
 
 class TagsFilter(filters.AllValuesMultipleFilter):
-    field_class = TagsMultipleChoiceField(field_name='tags__slug',
+    field_class = TagsMultipleChoiceFilter(field_name='tags__slug',
         to_field_name='slug',
         queryset=Tag.objects.all(),
     )
