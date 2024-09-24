@@ -17,6 +17,8 @@ ALLOWED_HOSTS = os.environ.get(
 
 AUTH_USER_MODEL = 'users.User'
 
+CSRF_TRUSTED_ORIGINS = ['http://158.160.81.21']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
