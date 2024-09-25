@@ -12,4 +12,4 @@ COPY . .
 
 CMD ["bash", "./entrypoint.sh"]
 
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi"]
+# CMD ["gunicorn", "--bind", "0.0.0.0:9090", "foodgram.wsgi"]

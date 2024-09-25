@@ -11,12 +11,10 @@ except FileNotFoundError:
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = (
-    'SECRET_KEY',
-    'my_mega_secret_code_ilz@4zqj=rq&agdol^##zgl9(vs')
+SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
 DEBUG = os.getenv('DEBUG', False)
-ALLOWED_HOSTS = os.environ.get(
-    'ALLOWED_HOSTS', default='localhost').split(', ')
+ALLOWED_HOSTS = ['*']
+#  os.getenv('ALLOWED_HOSTS', default='localhost').split(',')
 
 # Application definition
 

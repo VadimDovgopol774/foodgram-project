@@ -1,188 +1,94 @@
-[![foodgram_workflow](https://github.com/Alexey-Bormotov/foodgram-project-react/actions/workflows/foodgram_workflow.yml/badge.svg)](https://github.com/Alexey-Bormotov/foodgram-project-react/actions/workflows/foodgram_workflow.yml)
-# "Продуктовый помощник" (Foodgram)
+[![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
+[![docker](https://img.shields.io/badge/-Docker-464646?style=flat-square&logo=docker)](https://www.docker.com)
+[![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org)
+[![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
+[![Django REST Framework](https://img.shields.io/badge/-Django%20REST%20Framework-464646?style=flat-square&logo=Django%20REST%20Framework)](https://www.django-rest-framework.org)
+[![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat-square&logo=PostgreSQL)](https://www.postgresql.org)
+[![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org)
+[![Nginx](https://img.shields.io/badge/-NGINX-464646?style=flat-square&logo=NGINX)](https://nginx.org/ru)
 
-## 1. [Описание](#1)
-## 2. [Установка Docker (на платформе Ubuntu)](#2)
-## 3. [База данных и переменные окружения](#3)
-## 4. [Команды для запуска](#4)
-## 5. [Заполнение базы данных](#5)
-## 6. [Техническая информация](#6)
+# Foodgram «Блог рецептов»
+## Описание:
 
----
-## 1. Описание <a id=1></a>
+Веб-приложение Foodgram, «Блог рецептов». Пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
 
-Проект "Продуктовый помошник" (Foodgram) предоставляет пользователям следующие возможности:
-  - регистрироваться
-  - создавать свои рецепты и управлять ими (корректировать\удалять)
-  - просматривать рецепты других пользователей
-  - добавлять рецепты других пользователей в "Избранное" и в "Корзину"
-  - подписываться на других пользователей
-  - скачать список ингредиентов для рецептов, добавленных в "Корзину"
+## Стек технологий:
+* Python
+* React
+* Django
+* Django REST Framework
+* Linux
+* Docker
+* Docker-compose
+* Postgres
+* Gunicorn
+* Nginx
+* Workflow
 
----
-## 2. Установка Docker (на платформе Ubuntu) <a id=2></a>
+## Server IP:
 
-Проект поставляется в четырех контейнерах Docker (db, frontend, backend, nginx).  
-Для запуска необходимо установить Docker и Docker Compose.  
-Подробнее об установке на других платформах можно узнать на [официальном сайте](https://docs.docker.com/engine/install/).
+https://foodgdrama.webhop.me
 
-Для начала необходимо скачать и выполнить официальный скрипт:
-```bash
-apt install curl
-curl -fsSL https://get.docker.com -o get-docker.sh
-sh get-docker.sh
+Адрес админки:
+https://foodgdrama.webhop.me/admin
+
+Данные для входа:
+```
+email - food@mail.ru
+password - 123
 ```
 
-При необходимости удалить старые версии Docker:
-```bash
-apt remove docker docker-engine docker.io containerd runc 
+## Запуск проекта локально:
+
+1. Клонируйте репозиторий проекта с GitHub:
+```
+git clone git@github.com:By9n/foodgram.git
 ```
 
-Установить пакеты для работы через протокол https:
-```bash
-apt update
+2. В терминале, перейдите в каталог: 
 ```
-```bash
-apt install \
-  apt-transport-https \
-  ca-certificates \
-  curl \
-  gnupg-agent \
-  software-properties-common -y 
+cd .../foodgram/infra
 ```
 
-Добавить ключ GPG для подтверждения подлинности в процессе установки:
-```bash
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+и создайте там файл .evn для хранения ключей:
+```
+DEBUG_STATUS = False, еcли планируете использовать проект для разработки укажите  True
+SECRET_KEY = 'секретный ключ Django проекта'
+DB_ENGINE=django.db.backends.postgresql # указываем, что используем postgresql
+DB_NAME=postgres # указываем имя созданной базы данных
+POSTGRES_USER=postgres # указываем имя своего пользователя для подключения к БД
+POSTGRES_PASSWORD=postgres # устанавливаем свой пароль для подключения к БД
+DB_HOST=db # указываем название сервиса (контейнера)
+DB_PORT=5432 # указываем порт для подключения к БД 
 ```
 
-Добавить репозиторий Docker в пакеты apt и обновить индекс пакетов:
-```bash
-add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" 
-```
-```bash
-apt update
-```
+3. Запустите окружение:
 
-Установить Docker(CE) и Docker Compose:
-```bash
-apt install docker-ce docker-compose -y
+* Запустите docker-compose, развёртывание контейнеров выполниться в «фоновом режиме»
+```
+docker-compose up
 ```
 
-Проверить что  Docker работает можно командой:
-```bash
-systemctl status docker
+* выполните миграции:
 ```
-
-Подробнее об установке можно узнать по [ссылке](https://docs.docker.com/engine/install/ubuntu/).
-
----
-## 3. База данных и переменные окружения <a id=3></a>
-
-Проект использует базу данных PostgreSQL.  
-Для подключения и выполненя запросов к базе данных необходимо создать и заполнить файл ".env" с переменными окружения в папке "./infra/".
-
-Шаблон для заполнения файла ".env":
-```python
-DB_ENGINE=django.db.backends.postgresql
-DB_NAME=postgres
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-DB_HOST=db
-DB_PORT=5432
-SECRET_KEY='Здесь указать секретный ключ'
-ALLOWED_HOSTS='Здесь указать имя или IP хоста' (Для локального запуска - 127.0.0.1)
-```
-
----
-## 4. Команды для запуска <a id=4></a>
-
-Перед запуском необходимо склонировать проект:
-```bash
-HTTPS: git clone https://github.com/VadimDovgopol774/foodgram-project.git
-SSH: git clone git@github.com:VadimDovgopol774/foodgram-project.git
-```
-
-Cоздать и активировать виртуальное окружение:
-```bash
-python -m venv venv
-```
-```bash
-Linux: source venv/bin/activate
-Windows: source venv/Scripts/activate
-```
-
-И установить зависимости из файла requirements.txt:
-```bash
-python3 -m pip install --upgrade pip
-```
-```bash
-pip install -r requirements.txt
-```
-
-Далее необходимо собрать образы для фронтенда и бэкенда.  
-Из папки "./backend/foodgram/" выполнить команду:
-```bash
-docker build -t vadim760/foodgram_backend .
-```
-
-Из папки "./frontend/" выполнить команду:
-```bash
-docker build -t vadim760/foodgram_frontend .
-```
-
-После создания образов можно создавать и запускать контейнеры.  
-Из папки "./infra/" выполнить команду:
-```bash
-docker-compose up -d
-```
-
-После успешного запуска контейнеров выполнить миграции:
-```bash
+docker-compose exec backend python manage.py makemigrations
 docker-compose exec backend python manage.py migrate
 ```
 
-Создать суперюзера (Администратора):
-```bash
-docker-compose exec backend python manage.py createsuperuser
+*  соберите статику:
 ```
-
-Собрать статику:
-```bash
 docker-compose exec backend python manage.py collectstatic --no-input
 ```
 
-Теперь доступность проекта можно проверить по адресу [http://localhost/](http://localhost/)
-
----
-## 5. Заполнение базы данных <a id=5></a>
-
-С проектом поставляются данные об ингредиентах.  
-Заполнить базу данных ингредиентами можно выполнив следующую команду из папки "./infra/":
-```bash
-docker-compose exec backend python manage.py fill_ingredients_from_csv --path data/
+* cоздайте суперпользователя, введите - почту, логин, пароль:
+```
+docker-compose exec backend python manage.py createsuperuser
 ```
 
-Также необходимо заполнить базу данных тегами (или другими данными).  
-Для этого требуется войти в [админ-зону](http://localhost/admin/)
-проекта под логином и паролем администратора (пользователя, созданного командой createsuperuser).
+### Проект готов к работе
 
----
-## 6. Техническая информация <a id=6></a>
 
-Стек технологий: Python 3, Django, Django Rest, React, Docker, PostgreSQL, nginx, gunicorn, Djoser.
-
-Веб-сервер: nginx (контейнер nginx)  
-Frontend фреймворк: React (контейнер frontend)  
-Backend фреймворк: Django (контейнер backend)  
-API фреймворк: Django REST (контейнер backend)  
-База данных: PostgreSQL (контейнер db)
-
-Веб-сервер nginx перенаправляет запросы клиентов к контейнерам frontend и backend, либо к хранилищам (volume) статики и файлов.  
-Контейнер nginx взаимодействует с контейнером backend через gunicorn.  
-Контейнер frontend взаимодействует с контейнером backend посредством API-запросов.
-
-Проект доступен по ip: http://158.160.81.21/
-Админ-зона:http://158.160.81.21/admin
-Данные для админ-зоны: почта:dovgopol.vad@mail.ru имя:vadim пароль:070704
-
+Проект выполнил студент 84 когорты Яндекс Практикума
+Буйный Александр
+https://github.com/By9n
+https://t.me/by9n4ik
