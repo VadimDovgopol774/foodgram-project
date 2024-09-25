@@ -1,17 +1,22 @@
 import os
-
 from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 from dotenv import load_dotenv
+
+try:
+    load_dotenv()
+except FileNotFoundError:
+    raise FileNotFoundError('Не найден файл .env')
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY', 'default_key')
+DEBUG = os.getenv('DEBUG', False)
+ALLOWED_HOSTS = ['*']
+#  os.getenv('ALLOWED_HOSTS', default='localhost').split(',')
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'key')
-
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1 localhost').split()
+# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -23,9 +28,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
+    'users.apps.UsersConfig',
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
-    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +63,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
+
+# Database
+# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+
 if DEBUG:
     DATABASES = {
         'default': {
@@ -68,16 +77,18 @@ if DEBUG:
 else:
     DATABASES = {
         'default': {
-            'ENGINE': os.getenv(
-                'DB_ENGINE', default='django.db.backends.postgresql'
-            ),
-            'NAME': os.getenv('DB_NAME', default='postgres'),
-            'USER': os.getenv('POSTGRES_USER', default='postgres'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
-            'HOST': os.getenv('DB_HOST', default='db'),
-            'PORT': os.getenv('DB_PORT', default='5432')
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('POSTGRES_DB', 'foodgram'),
+            'USER': os.getenv('POSTGRES_USER', 'foodgram_user'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'foodgram_password'),
+            'HOST': os.getenv('DB_HOST', 'localhost'),
+            'PORT': os.getenv('DB_PORT', 5432)
         }
     }
+
+
+# Password validation
+# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -94,9 +105,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+# Internationalization
+# https://docs.djangoproject.com/en/3.2/topics/i18n/
+
 LANGUAGE_CODE = 'ru-RU'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -104,37 +119,52 @@ USE_L10N = True
 
 USE_TZ = True
 
-AUTH_USER_MODEL = 'users.User'
+STATIC_URL = '/backend_static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED')
+MEDIA_URL = '/backend_media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'collected_static'
+CSV_DIR = os.path.join(BASE_DIR, 'data')
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/3.2/howto/static-files/
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTH_USER_MODEL = 'users.User'
+
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
-    ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
+    'PAGE_SIZE': 6,
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
 }
 
 DJOSER = {
     'SERIALIZERS': {
-        'user_create': 'api.serializers.CustomUserCreateSerializer',
-        'user': 'api.serializers.CustomUserSerializer',
-        'current_user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.UserSerializer',
+        'user': 'api.serializers.UserSerializer',
     },
-    "PERMISSIONS": {
-        'user_create': ['rest_framework.permissions.AllowAny'],
+    'PERMISSIONS': {
+        'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly'],
         'user_list': ['rest_framework.permissions.AllowAny'],
-        'user': ['rest_framework.permissions.AllowAny'],
     },
+    'HIDE_USERS': False,
+    'LOGIN_FIELD': 'email',
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SITE_URL = 'https://foodgdrama.webhop.me'
