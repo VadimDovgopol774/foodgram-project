@@ -1,94 +1,142 @@
-[![GitHub%20Actions](https://img.shields.io/badge/-GitHub%20Actions-464646?style=flat-square&logo=GitHub%20actions)](https://github.com/features/actions)
-[![docker](https://img.shields.io/badge/-Docker-464646?style=flat-square&logo=docker)](https://www.docker.com)
-[![Python](https://img.shields.io/badge/-Python-464646?style=flat-square&logo=Python)](https://www.python.org)
-[![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
-[![Django REST Framework](https://img.shields.io/badge/-Django%20REST%20Framework-464646?style=flat-square&logo=Django%20REST%20Framework)](https://www.django-rest-framework.org)
-[![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-464646?style=flat-square&logo=PostgreSQL)](https://www.postgresql.org)
-[![gunicorn](https://img.shields.io/badge/-gunicorn-464646?style=flat-square&logo=gunicorn)](https://gunicorn.org)
-[![Nginx](https://img.shields.io/badge/-NGINX-464646?style=flat-square&logo=NGINX)](https://nginx.org/ru)
+# Foodgram
+![example workflow](https://github.com/why-no1/foodgram/actions/workflows/main.yml/badge.svg)
+Foodgram — социальная сеть для обмена любимыми рецептами.
 
-# Foodgram «Блог рецептов»
-## Описание:
-
-Веб-приложение Foodgram, «Блог рецептов». Пользователи смогут публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а перед походом в магазин скачивать сводный список продуктов, необходимых для приготовления одного или нескольких выбранных блюд.
-
-## Стек технологий:
-* Python
-* React
-* Django
-* Django REST Framework
-* Linux
-* Docker
-* Docker-compose
-* Postgres
-* Gunicorn
-* Nginx
-* Workflow
-
-## Server IP:
-
-https://foodgdrama.webhop.me
-
-Адрес админки:
-https://foodgdrama.webhop.me/admin
-
-Данные для входа:
-```
-email - food@mail.ru
-password - 123
-```
-
-## Запуск проекта локально:
-
-1. Клонируйте репозиторий проекта с GitHub:
-```
-git clone git@github.com:By9n/foodgram.git
-```
-
-2. В терминале, перейдите в каталог: 
-```
-cd .../foodgram/infra
-```
-
-и создайте там файл .evn для хранения ключей:
-```
-DEBUG_STATUS = False, еcли планируете использовать проект для разработки укажите  True
-SECRET_KEY = 'секретный ключ Django проекта'
-DB_ENGINE=django.db.backends.postgresql # указываем, что используем postgresql
-DB_NAME=postgres # указываем имя созданной базы данных
-POSTGRES_USER=postgres # указываем имя своего пользователя для подключения к БД
-POSTGRES_PASSWORD=postgres # устанавливаем свой пароль для подключения к БД
-DB_HOST=db # указываем название сервиса (контейнера)
-DB_PORT=5432 # указываем порт для подключения к БД 
-```
-
-3. Запустите окружение:
-
-* Запустите docker-compose, развёртывание контейнеров выполниться в «фоновом режиме»
-```
-docker-compose up
-```
-
-* выполните миграции:
-```
-docker-compose exec backend python manage.py makemigrations
-docker-compose exec backend python manage.py migrate
-```
-
-*  соберите статику:
-```
-docker-compose exec backend python manage.py collectstatic --no-input
-```
-
-* cоздайте суперпользователя, введите - почту, логин, пароль:
-```
-docker-compose exec backend python manage.py createsuperuser
-```
-
-### Проект готов к работе
+Вот тут можно зайти на сайт - https://taskiforit.hopto.org/recipes
 
 
-Проект выполнил студент 84 когорты Яндекс Практикума
-Буйный Александр
-https://github.com/By9n
-https://t.me/by9n4ik
+**_Контейнеры и CI/CD для Foodgram._**
+
+## Установка 
+
+1. Клонируйте репозиторий на свой компьютер:
+
+    ```bash
+    git clone git@github.com:why-no1/foodgram.git
+    ```
+    ```bash
+    cd foodgram
+    ```
+
+### Создание Docker-образов
+
+1.  Замените username на ваш логин на DockerHub:
+
+    ```bash
+    cd frontend
+    docker build -t username/foodgram_frontend .
+    cd ../backend
+    docker build -t username/foodgram_backend .
+    ```
+
+2. Загрузите образы на DockerHub:
+
+    ```bash
+    docker push username/foodgram_frontend
+    docker push username/foodgram_backend
+    ```
+
+### Деплой на сервере
+
+1. Подключитесь к удаленному серверу
+
+    ```bash
+    ssh -i путь_до_файла_с_SSH_ключом/название_файла_с_SSH_ключом имя_пользователя@ip_адрес_сервера 
+    ```
+
+2. Создайте на сервере директорию kittygram через терминал
+
+    ```bash
+    mkdir foodgram
+    ```
+
+3. Установка docker compose на сервер:
+
+    ```bash
+    sudo apt update
+    sudo apt install curl
+    curl -fSL https://get.docker.com -o get-docker.sh
+    sudo sh ./get-docker.sh
+    sudo apt-get install docker-compose-plugin
+    ```
+
+4. В директорию foodgram/ скопируйте файлы docker-compose.production.yml и .env и nginx.conf:
+
+    ```bash
+    scp -i path_to_SSH/SSH_name docker-compose.production.yml username@server_ip:/home/username/foodgram/docker-compose.production.yml
+    * ath_to_SSH — путь к файлу с SSH-ключом;
+    * SSH_name — имя файла с SSH-ключом (без расширения);
+    * username — ваше имя пользователя на сервере;
+    * server_ip — IP вашего сервера.
+    ```
+
+5. Запустите docker compose в режиме демона:
+
+    ```bash
+    sudo docker compose -f docker-compose.production.yml up -d
+    ```
+
+6. Выполните миграции, соберите статические файлы бэкенда и скопируйте их в /static/:
+
+    ```bash
+    sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+    sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+    sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /static/
+    ```
+
+7. На сервере в редакторе nano откройте конфиг Nginx:
+
+    ```bash
+    sudo nano /etc/nginx/sites-enabled/default
+    ```
+
+8. Измените настройки location в секции server:
+
+    ```bash
+    location / {
+        proxy_set_header Host $http_host;
+        proxy_pass http://127.0.0.1:8000;
+    }
+    ```
+
+9. Проверьте работоспособность конфига Nginx:
+
+    ```bash
+    sudo nginx -t
+    ```
+    Если ответ в терминале такой, значит, ошибок нет:
+    ```bash
+    nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+    nginx: configuration file /etc/nginx/nginx.conf test is successful
+    ```
+
+10. Перезапускаем Nginx
+    ```bash
+    sudo service nginx reload
+    ```
+
+### Настройка CI/CD
+
+1. Файл workflow уже написан. Он находится в директории
+
+    ```bash
+    foodgram/.github/workflows/main.yml
+    ```
+
+2. Для адаптации его на своем сервере добавьте секреты в GitHub Actions:
+
+    ```bash
+    DOCKER_USERNAME                # имя пользователя в DockerHub
+    DOCKER_PASSWORD                # пароль пользователя в DockerHub
+    HOST                           # ip_address сервера
+    USER                           # имя пользователя
+    SSH_KEY                        # приватный ssh-ключ (cat ~/.ssh/id_rsa)
+    SSH_PASSPHRASE                 # кодовая фраза (пароль) для ssh-ключа
+
+    TELEGRAM_TO                    # id телеграм-аккаунта (можно узнать у @userinfobot, команда /start)
+    TELEGRAM_TOKEN                 # токен бота (получить токен можно у @BotFather, /token, имя бота)
+    ```
+
+
+### Автор
+Лигай Виталий
